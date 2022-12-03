@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <script>
+      /* beautify preserve:start */
+      var root_url = "https://labs.tib.eu/geoestimation/";
+      console.log(root_url);
+      var static_url = "https://tibhannover.github.io/GeoEstimation/demo/";
+      console.log(static_url);
+      var media_url = "https://labs.tib.eu/geoestimation/media/";
+      console.log(media_url);
+
+      /* beautify preserve:end */
+    </script>
+       <script src="static/js/jquery-3.3.1.min.js"></script>
+       <script src="static/js/popper.min.js"></script>
+       <script src="static/js/bootstrap.min.js"></script>
+       <script src="static/js/exif-js"></script>
+       <link rel="stylesheet" href="static/style/css/bootstrap.min.css" />
+       <link rel="stylesheet" href="static/style/css/solid.css" />
+       <link rel="stylesheet" href="static/style/css/fontawesome.css" />
+
+    <script src="static/js/jquery.csv.min.js"></script>
+    <link rel="stylesheet" href="static/leaflet/leaflet.css" />
+    <script src="static/leaflet/leaflet.js"></script>
+    <script src="static/leaflet/leaflet.rotatedMarker.js"></script>
+
+    <link rel="stylesheet" href="static/style/css/tib.css" />
+  </head>
+
+
+  <body class="bg-light">
+    <nav class="navbar navbar-light bg-white" style="box-shadow: 0px 0px 4px #888;">
+      <a href="/geoestimation/" class="navbar-brand mr-0">
+        <h4 class="tib-red-text">Geolocation Estimation</h4>
+      </a>
+
+      <a href="https://www.tib.eu"><img src="static/style/images/logo.svg" width="74px" height="50px" class="d-inline-block align-top" alt=""></a>
+
+    </nav>
+
+    
+
+<div class="container-fluid" style="max-width: 1920px;">
+
+  <div class="row top_row_buffer align-items-end">
+    
+    <div class="col-md-12" id="alert-wrapper">
+
+    </div>
+ 
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header" data-toggle="collapse" href="#collapseIntro" aria-expanded="false" aria-controls="collapseIntro">
+          <a class="h6" data-toggle="collapse" href="#collapseIntro" aria-expanded="false" aria-controls="collapseIntro">Instructions</a>
+          <div class="collapse-wrapper" style="float:right;">
+            <a data-toggle="collapse" href="#collapseIntro" aria-expanded="false" aria-controls="collapseIntro" style="color: #AF1414;">
+              <i class="fa fa-angle-down fa-lg"></i>
+            </a>
+          </div>
+          
+        </div>
+
+        <div class="card-body collapse padding-small" id="collapseIntro">
+          <p>
+            Select a photo under "Image Selection" and estimate its geolocation by clicking on the world map.
+          </p>
+          <p>
+            Under "Image Selection" you can either choose an image from a predefined benchmark test set or upload your own photo. Your performance compared to our deep learning approach and the scene classification (probabilities for indoor, nature,
+            urban) results are shown in the sections "Statistics" and "Scene Classification", respectively.
+          </p>
+          <p>
+            After you have clicked on "Guess Location" the results are calculated and presented. The world map is overlaid with a heat map, where the regions colored in red represent the most likely locations of the photo at hand. In addition, the
+            photo parts that contributed at most to the decision are visualised (blue = “less important” to red = “very important”).
+          </p>
+        </div>
+      </div>
+    </div>
+
+
+
+  </div>
+
+  <div class="row">
+    <div class="col-md-5 top_row_buffer h-100">
+      <div id="image-card" class="card h-100">
+        <div class="card-header">
+          <p class="card-title" style="padding-bottom: 5px;">Image Selection
+            <button id="btn_random_image" class="btn btn-outline-secondary tib-red-text btn-sm float-right" style="border: 1px solid #AF1414;">
+              Choose Random</button></p>
+          <ul id="image_list_tabs" class="nav nav-tabs card-header-tabs">
+            <li class="nav-item">
+              <a class="nav-link active" id="open_tab_title" data-toggle="tab" href="#open_tab">Open</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" id="closed_tab_title" data-toggle="tab" href="#closed_tab">Annotated</a>
+            </li>
+            <li class="nav-item" id="upload-tab-nav-item">
+              <a class="nav-link" id="upload_tab_title" data-toggle="tab" href="#upload_tab">Upload</a>
+            </li>
+
+          </ul>
+
+        </div>
+        <div id="image-card-body" class="card-body h-100">
+          <div class="tab-content">
+
+            <div id="open_tab" class="tab-pane active bg-white" style="padding: 0px 0px;">
+              <div class="list-group list-group-horizontal" id="list-images-open">
+              </div>
+
+
+              <div class="image_container">
+                <small style="margin-bottom: 0px; margin-left: 5px; margin-right: 5px;" class="license_text">Photo License:</small>
+                <div id="heatmap" class="heatmap">
+                  <img class="image_full rounded" src="" alt="" data-toggle="modal" data-target="#previewFull">
+                </div>
+              </div>
+
+            </div>
+
+            <div id="closed_tab" class="tab-pane" style="padding: 0px 0px;">
+              <div class='alert alert-warning' role='alert' style="margin: 20px; padding: 10px;
+">No annotated photos.</div>
+
+              <div class="list-group list-group-horizontal" id="list-images-closed">
+
+              </div>
+
+              <div class="image_container">
+                <small style="margin-bottom: 0px; margin-left: 5px; margin-right: 5px" class="license_text_closed"></small>
+                <div id="heatmap_closed" class="heatmap">
+                  <img class="image_full_closed rounded" src="" alt="" data-toggle="modal" data-target="#previewFullClosed">
+                </div>
+
+              </div>
+
+            </div>
+
+            <div id="upload_tab" class="tab-pane" style="padding: 0px 0px;">
+              <form id="upload-form" action="/geoestimation/upload_file" method="POST" enctype="multipart/form-data">
+                <div class="container_centered">
+                  
+                  <div class="form-check form-check-inline">    
+                      <label class="form-check-label" for="termsOfServiceCheckbox" style="padding-right: 5px;">
+                        I agree the <a href="https://www.tib.eu/de/service/datenschutz/" target="_blank">terms of service</a>
+                      </label>
+                      <input class="form-check-input position-static" type="checkbox" id="termsOfServiceCheckbox">   
+                  </div>
+                  
+                  <input type="file" id="file" name="file" accept="image/jpeg, image/jpg,
+                  image/png, image/tif, image/tiff, .png, .jpg, .jpeg" style="display: none;">
+                  </input>
+                  <button type="button" class="btn btn-tib" id="file_upload_button" onclick="document.getElementById('file').click();" disabled>
+                    <span class="spinner-upload spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display: none;"></span>
+                    Select a Photo
+                  </button>
+                  <button id="reset_user_upload" type="button" class="btn btn-link">Reset</button>
+                </div>
+
+              </form>
+              <div id="image-card-body" class="card-body">
+                <div class="image_container">
+                    <small style="margin-bottom: 0px; margin-left: 5px; margin-right: 5px;" class="upload_text"></small>  
+                  <div id="heatmap_upload" class="heatmap">
+                    <img id="uploaded_image" class="image_full_upload rounded" src="" alt="" data-toggle="modal" data-target="#previewFullUpload">
+                  </div>
+
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <div id="guess_location_mobile" style="width: 100%;">
+      <div class="col w-100 top_row_buffer">
+        <button type='button' class='btn_show_result btn btn-tib btn-block btn-lg' disabled='true'>
+          <span class="spinner-guess-location spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display: none;"></span>
+          Guess Location
+        </button>
+      </div>
+    </div>
+
+    <div class="col-md-7 h-100 top_row_buffer">
+
+      <div id="guess_location_desktop">
+        <button type='button' class='btn_show_result btn btn-tib btn-block btn-lg' disabled='true'>
+            <span class="spinner-guess-location spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display: none;"></span>
+            Guess Location
+        </button>
+      </div>
+
+      <div id="map-card" class="card h-100 top_row_buffer" style="border: none;">
+        <div class="card-body" style="padding: 0px;">
+          <div id="map"></div>
+        </div>
+
+        <div class="card-footer" style="padding: 2px 5px;">
+          <div id="legend" style="text-align: center;">
+            <small>Marker:</small>
+            <img src="static/leaflet/images/custom/marker_user.svg" alt="your marker" width="25em" height="25em">
+            <small>User</small>
+            <img src="static/leaflet/images/custom/marker_machine.svg" alt="machine's marker" width="25em" height="25em">
+            <small>Model</small>
+            <img src="static/leaflet/images/custom/marker_GT_world.svg" alt="ground truth marker" width="25em" height="25em">
+            <small>Ground truth</small>
+            <img src="static/leaflet/images/custom/marker_exif.svg" alt="exif marker" width="25em" height="25em">
+            <small>EXIF (if available)</small>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+
+    <div class="col-xl-2 col-lg-4 order-lg-2 top_row_buffer">
+      <div class="card h-100" id="result_card">
+        <div class="card-header">Result</div>
+        <div class="card-body padding-small">
+          <p>Distance to ground truth or EXIF location:</p>
+          <div class="alert alert-success alert-statistic" role="alert" id='distance_user'></div>
+          <div class="alert alert-danger alert-statistic" role="alert" id='distance_model'></div>
+
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xl-2 col-lg-4 order-lg-3 top_row_buffer">
+      <div class="card h-100">
+        <div class="card-header">Scene Classification</div>
+
+          <ul class="list-group list-group-flush padding-small">
+            <li class="list-group-item padding-minimal" id="prob_indoor_text">Probability indoor: ---</li>
+            <li class="list-group-item padding-minimal" id="prob_natural_text">Probability nature: ---</li>
+            <li class="list-group-item padding-minimal" id="prob_urban_text">Probability urban: ---</li>
+            <li class="list-group-item padding-minimal" id="predicted_scene_text">Predicted scene: ---</li>
+          </ul>
+      </div>
+    </div>
+
+    <div class="col-xl-3 col-lg-4 order-lg-1 top_row_buffer">
+      <div class="card h-100">
+        <div class="card-header">
+          Statistics
+          <button id="reset_image_list" type="button" class="btn btn-link float-right" style="margin: 0px 0px -2px 0px; padding: 0px;">Reset</button>
+        </div>
+          <ul class="list-group list-group-flush padding-small">
+            <li class="list-group-item padding-minimal" id="annotated_total_text">Annotated images: 0</li>
+            <li class="list-group-item padding-minimal" id="rate_of_sucess_text">Rate of sucess: ---</li>
+            <li class="list-group-item padding-minimal" id="mean_error_user_text">Your mean error: ---</li>
+            <li class="list-group-item padding-minimal" id="mean_error_model_text">Model's mean error: ---</li>
+          </ul>
+      </div>
+    </div>
+
+    <div class="col-xl-5 order-xl-first order-lg-12 order-md-12 order-sm-12 top_row_buffer">
+      <div class="card h-100">
+        <div class="card-header">
+          Reference
+        </div>
+        <div class="card-body padding-small">
+          <p>
+            For details on the deep learning approach please check our publication:
+          </p>
+          <div class="cite">
+            <a href="http://openaccess.thecvf.com/content_ECCV_2018/papers/Eric_Muller-Budack_Geolocation_Estimation_of_ECCV_2018_paper.pdf">
+              Müller-Budack E., Pustu-Iren K., Ewerth R. (2018) Geolocation Estimation of Photos Using a Hierarchical Model
+              and Scene Classification. In: <span style="font-style: italic;">Ferrari V., Hebert M., Sminchisescu C., Weiss
+                Y. (eds)
+                Computer Vision – ECCV 2018. ECCV 2018. Lecture Notes in Computer Science</span>, vol 11216. Springer, Cham
+            </a>
+          </div>
+          <div>
+                This work is financially supported by the German Research Foundation (DFG project number 388420599).
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<div id="previewFull" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <img src="" class="preview img-responsive rounded">
+  </div>
+</div>
+
+<div id="previewFullClosed" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabelClosed" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <img src="" class="preview_closed img-responsive rounded">
+  </div>
+</div>
+
+<div id="previewFullUpload" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabelClosed" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <img src="" class="preview_upload img-responsive rounded">
+  </div>
+</div>
+
+  </body>
+
+  
+<script src="static/js/heatmap.min.js"></script>
+<script src="static/leaflet/leaflet-heat.js"></script>
+<script src="static/quiz_and_upload_interaction.js"></script>
+
+
+</html>
