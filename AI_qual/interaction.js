@@ -134,7 +134,7 @@ $(document).ready(function () {
                     var item = list[i];
                     console.log(item.gt_lat);
 
-                    if(item.img_id == 349 || item.img_id == 405 || item.img_id == 371 || item.img_id == 397) {
+                    if(item.img_id == 349 || item.img_id == 405 || item.img_id == 371) {
                         markerReal[i].setLatLng(new L.LatLng(item.gt_lat, item.gt_long));
                         markerEstimated[i].setLatLng(new L.LatLng(item.predicted_lat, item.predicted_long));
                         markerEstimated[i].bindPopup("<b>Model:</b><br>" + markerEstimated[i].getLatLng().toString()+ "<br>Case:" + item.img_id.toString());
