@@ -121,40 +121,36 @@ $(document).ready(function () {
                 console.log(list.length)
 
                 for (var i = 0; i < list.length; i++) {
-                    if ((list[i].available == "1") && (containsObject(list[i].license_name, allowed_licenses)))
-                    {
-                        dataOpen.set(i, list[i]); // fill map
-                        addImageToList(IMG_PATH + list[i].url, i); // fill list of images
+                    dataOpen.set(i, list[i]); // fill map
+                    addImageToList(IMG_PATH + list[i].url, i); // fill list of images
 
-                        markerEstimated[i] = createMarker('demo/leaflet/images/custom/marker_machine.svg', -10)
-                        markerReal[i] = createMarker('demo/leaflet/images/custom/marker_GT_world.svg', 10)
+                    markerEstimated[i] = createMarker('demo/leaflet/images/custom/marker_machine.svg', -10)
+                    markerReal[i] = createMarker('demo/leaflet/images/custom/marker_GT_world.svg', 10)
 
-                        var item = list[i]
-                        console.log(item);
+                    var item = list[i]
+                    console.log(item);
 
-                        console.log(markerReal[i]);
+                    console.log(markerReal[i]);
 
-                        markerReal[i].setLatLng(new L.LatLng(item.gt_lat, item.gt_long));
-                        markerEstimated[i].setLatLng(new L.LatLng(item.predicted_lat, item.predicted_long));
+                    markerReal[i].setLatLng(new L.LatLng(item.gt_lat, item.gt_long));
+                    markerEstimated[i].setLatLng(new L.LatLng(item.predicted_lat, item.predicted_long));
 
-                        var color;
-                        var r = Math.floor(Math.random() * 255);
-                        var g = Math.floor(Math.random() * 255);
-                        var b = Math.floor(Math.random() * 255);
-                        color= "rgb("+r+" ,"+g+","+ b+")"; 
+                    var color;
+                    var r = Math.floor(Math.random() * 255);
+                    var g = Math.floor(Math.random() * 255);
+                    var b = Math.floor(Math.random() * 255);
+                    color= "rgb("+r+" ,"+g+","+ b+")"; 
 
-                        var polyline = L.polyline([[item.gt_lat, item.gt_long], [item.predicted_lat, item.predicted_long]], {color:color}).addTo(map);
+                    var polyline = L.polyline([[item.gt_lat, item.gt_long], [item.predicted_lat, item.predicted_long]], {color:color}).addTo(map);
 
-                        console.log(map)
+                    console.log(map)
 
-                        markerEstimated[i].addTo(map);
-                        markerReal[i].addTo(map);
+                    markerEstimated[i].addTo(map);
+                    markerReal[i].addTo(map);
 
-                        console.log(map)
+                    console.log(map)
 
-                        move = false
-
-                    }
+                    move = false
                 }
 
                 updateTabText();
