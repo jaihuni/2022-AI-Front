@@ -55,7 +55,7 @@ $(document).ready(function () {
             iconUrl: path,
             iconSize: [16, 27],
             iconAnchor: [8, 27],
-            popupAnchor: [0, -57],
+            popupAnchor: [0, -28],
         });
 
         var options = {
