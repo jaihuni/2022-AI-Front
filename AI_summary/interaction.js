@@ -53,8 +53,8 @@ $(document).ready(function () {
     function createMarker(path, deg) {
         var userIcon = L.icon({
             iconUrl: path,
-            iconSize: [34, 57],
-            iconAnchor: [17, 57],
+            iconSize: [16, 27],
+            iconAnchor: [8, 27],
             popupAnchor: [0, -57],
         });
 
