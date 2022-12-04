@@ -112,37 +112,55 @@ $(document).ready(function () {
 
                 console.log("read csv file");
                 list = $.csv.toObjects(response);
-                list = list.sort(function (a, b) { return a.gt_lat - b.gt_lat }); // shuffle list
                 console.debug("number or rows read from csv: " + list.length);
 
                 console.log(list.length)
-            
-                var latitudes = [];
-                var longitudes = [];
+
+                prev_gt_lat = list[0].gt_lat;
+                prev_gt_lng = list[0].gt_long;
+                prev_pred_lat = list[0].predicted_lat;
+                prev_pred_lng = list[0].predicted_long;
+
+                var color;
+                var r = Math.floor(Math.random() * 255);
+                var g = Math.floor(Math.random() * 255);
+                var b = Math.floor(Math.random() * 255);
+                color= "rgb("+r+" ,"+g+","+ b+")"; 
 
                 for (var i = 0; i < list.length; i++) {
+                    markerEstimated[i] = createMarker('demo/leaflet/images/custom/marker_machine.svg', -10)
+                    markerReal[i] = createMarker('demo/leaflet/images/custom/marker_GT_world.svg', 10)
+
                     var item = list[i];
                     console.log(item.gt_lat);
 
-                    L.circleMarker([item.gt_lat, item.gt_long], {color: 'blue', radius:8, weight:0, fillOpacity:0.3}).addTo(map);
-                    latitudes[i] = item.gt_lat
-                    longitudes[i] = item.gt_long
-                }
+                    if(item.img_id == 349 || item.img_id == 405 || item.img_id == 371 || item.img_id == 397) {
+                        markerReal[i].setLatLng(new L.LatLng(item.gt_lat, item.gt_long));
+                        markerEstimated[i].setLatLng(new L.LatLng(item.predicted_lat, item.predicted_long));
+                        markerEstimated[i].bindPopup("<b>Model:</b><br>" + markerEstimated[i].getLatLng().toString()+ "<br>Case:" + item.img_id.toString());
+                        markerReal[i].bindPopup("<b>Ground Truth:</b><br>" + markerReal[i].getLatLng().toString());
 
-                console.log(latitudes);
-                console.log(longitudes);
-                var corner1 = L.latLng(Math.min(...latitudes), Math.min(...longitudes));
-                var corner2 = L.latLng(Math.max(...latitudes), Math.max(...longitudes));
-                console.log(corner1);
-                console.log(corner2);
-                
+                        var polyline = L.polyline([[item.gt_lat, item.gt_long], [item.predicted_lat, item.predicted_long]], {color:'blue'}).addTo(map);
+
+                        markerEstimated[i].addTo(map);
+                        markerReal[i].addTo(map);
+
+                        var r = Math.floor(Math.random() * 255);
+                        var g = Math.floor(Math.random() * 255);
+                        var b = Math.floor(Math.random() * 255);
+                        color= "rgb("+r+" ,"+g+","+ b+")"; 
+
+                        if(i == list.length) {
+                            break
+                        }
+                    }
+                    
+                }
 
                 move = false
 
                 updateTabText();
                 updateMapSize();
-
-                map.fitBounds(L.latLngBounds(corner1, corner2), {padding: [50, 50]});
             }
         });
 
