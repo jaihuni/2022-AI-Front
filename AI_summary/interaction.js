@@ -112,49 +112,81 @@ $(document).ready(function () {
 
                 console.log("read csv file");
                 list = $.csv.toObjects(response);
-                list = list.sort(function () { return 0.5 - Math.random() }); // shuffle list
+                list = list.sort(function (a, b) { return a.gt_lat - b.gt_lat }); // shuffle list
                 console.debug("number or rows read from csv: " + list.length);
-
-                // 'All Rights Reserved', 'No known copyright restrictions', 'United States Government Work', 'Public Domain Mark'
-                allowed_licenses = ['CC-BY-NC-SA 2.0', 'CC-BY-NC 2.0', 'CC-BY-NC-ND 2.0', 'CC-BY 2.0', 'CC-BY-SA 2.0', 'CC-BY-ND 2.0', 'CC0']
 
                 console.log(list.length)
 
-                for (var i = 0; i < list.length; i++) {
-                    dataOpen.set(i, list[i]); // fill map
-                    addImageToList(IMG_PATH + list[i].url, i); // fill list of images
+                prev_gt_lat = list[0].gt_lat;
+                prev_gt_lng = list[0].gt_long;
+                prev_pred_lat = list[0].predicted_lat;
+                prev_pred_lng = list[0].predicted_long;
 
+                var color;
+                var r = Math.floor(Math.random() * 255);
+                var g = Math.floor(Math.random() * 255);
+                var b = Math.floor(Math.random() * 255);
+                color= "rgb("+r+" ,"+g+","+ b+")"; 
+
+                for (var i = 1; i <= list.length; i++) {
                     markerEstimated[i] = createMarker('demo/leaflet/images/custom/marker_machine.svg', -10)
                     markerReal[i] = createMarker('demo/leaflet/images/custom/marker_GT_world.svg', 10)
 
-                    var item = list[i]
-                    console.log(item);
+                    if (i != list.length) {
+                        var item = list[i];
+                        console.log(item.gt_lat);
+                    }
 
-                    console.log(markerReal[i]);
+                    if(item.gt_lat != prev_gt_lat || i == list.length) {
 
-                    markerReal[i].setLatLng(new L.LatLng(item.gt_lat, item.gt_long));
-                    markerEstimated[i].setLatLng(new L.LatLng(item.predicted_lat, item.predicted_long));
+                        markerReal[i].setLatLng(new L.LatLng(prev_gt_lat, prev_gt_lng));
+                        markerEstimated[i].setLatLng(new L.LatLng(prev_pred_lat, prev_pred_lng));
+                        markerEstimated[i].bindPopup("<b>Model:</b><br>" + markerEstimated[i].getLatLng().toString());
+                        markerReal[i].bindPopup("<b>Ground Truth:</b><br>" + markerReal[i].getLatLng().toString());
 
-                    var color;
-                    var r = Math.floor(Math.random() * 255);
-                    var g = Math.floor(Math.random() * 255);
-                    var b = Math.floor(Math.random() * 255);
-                    color= "rgb("+r+" ,"+g+","+ b+")"; 
+                        var polyline = L.polyline([[prev_gt_lat, prev_gt_lng], [prev_pred_lat, prev_pred_lng]], {color:color}).addTo(map);
 
-                    var polyline = L.polyline([[item.gt_lat, item.gt_long], [item.predicted_lat, item.predicted_long]], {color:color}).addTo(map);
+                        markerEstimated[i].addTo(map);
+                        markerReal[i].addTo(map);
 
-                    console.log(map)
+                        var r = Math.floor(Math.random() * 255);
+                        var g = Math.floor(Math.random() * 255);
+                        var b = Math.floor(Math.random() * 255);
+                        color= "rgb("+r+" ,"+g+","+ b+")"; 
 
-                    markerEstimated[i].addTo(map);
-                    markerReal[i].addTo(map);
+                        if(i == list.length) {
+                            break
+                        }
 
-                    console.log(map)
+                        prev_gt_lat = item.gt_lat;
+                        prev_gt_lng = item.gt_long;
+                        prev_pred_lat = item.predicted_lat;
+                        prev_pred_lng = item.predicted_long;
+                    }
 
-                    move = false
+                    function get_dist(ax,ay,bx,by) {
+                        var dis_x = ax - bx;
+                        var dix_y = ay - by;
+                        dist = Math.sqrt( dis_x * dis_x + dix_y * dix_y );
+                        return dist;
+                    }
+
+                    if (get_dist(prev_gt_lat, prev_gt_lng, prev_pred_lat, prev_pred_lng) > get_dist(prev_gt_lat, prev_gt_lng, item.predicted_lat, item.predicted_long)) {
+                        L.circleMarker([prev_pred_lat, prev_pred_lng], {color: color}).addTo(map);
+                        prev_gt_lat = item.gt_lat;
+                        prev_gt_lng = item.gt_long;
+                        prev_pred_lat = item.predicted_lat;
+                        prev_pred_lng = item.predicted_long;
+                    }
+                    else if (get_dist(prev_gt_lat, prev_gt_lng, prev_pred_lat, prev_pred_lng) < get_dist(prev_gt_lat, prev_gt_lng, item.predicted_lat, item.predicted_long)) {
+                        L.circleMarker([item.predicted_lat, item.predicted_long], {color: color}).addTo(map);
+                    }
+                    
                 }
 
-                updateTabText();
+                move = false
 
+                updateTabText();
                 updateMapSize();
             }
         });
