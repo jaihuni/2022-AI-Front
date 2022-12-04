@@ -121,7 +121,7 @@ $(document).ready(function () {
                     var item = list[i];
                     console.log(item.gt_lat);
 
-                    L.circleMarker([item.gt_lat, item.gt_long], {color: 'blue'}).addTo(map);
+                    L.circleMarker([item.gt_lat, item.gt_long], {color: 'blue', radius:10, weight:0}).addTo(map);
                 }
 
                 move = false
